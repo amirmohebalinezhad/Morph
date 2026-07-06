@@ -68,7 +68,7 @@ const PLANS: Array<{ pattern: RegExp; make: PlanFactory }> = [
           op: 'addBehavior',
           id: 'mock-counter',
           description: 'Counts clicks on the element and shows the tally in a badge.',
-          js: `const el = morph.el('${ref}');\nlet n = 0;\nconst badge = document.createElement('span');\nbadge.setAttribute('data-morph-badge', 'counter');\nbadge.textContent = ' (0 clicks)';\nel.appendChild(badge);\nmorph.onCleanup(() => badge.remove());\nmorph.on(el, 'click', () => { n += 1; badge.textContent = ' (' + n + ' clicks)'; });`,
+          js: `const el = morph.el('${ref}');\nlet n = 0;\nconst badge = document.createElement('span');\nbadge.setAttribute('data-morph-badge', 'counter');\nbadge.textContent = ' (0 clicks)';\nel.after(badge);\nmorph.onCleanup(() => badge.remove());\nmorph.on(el, 'click', () => { n += 1; badge.textContent = ' (' + n + ' clicks)'; });`,
         },
       ],
       question: null,

@@ -154,10 +154,60 @@ async function render() {
     ]),
     anthropicSection,
     oaSection,
+    buildBehaviorSection(),
     saveBtn,
     status,
   );
   syncVisibility();
+}
+
+/**
+ * Interactive behaviors run everywhere (even strict-CSP sites) once the
+ * userScripts API is available: the optional permission + Chrome's
+ * per-extension "Allow user scripts" toggle.
+ */
+function buildBehaviorSection(): HTMLElement {
+  const statusLine = el('p', { class: 'hint' }, ['Checking…']);
+  const grantBtn = el('button', { class: 'primary', type: 'button' }, ['Enable advanced behaviors']) as HTMLButtonElement;
+
+  async function refresh() {
+    const hasPermission = await chrome.permissions
+      .contains({ permissions: ['userScripts'] })
+      .catch(() => false);
+    let toggleOn = false;
+    if (hasPermission) {
+      try {
+        const probe = (await chrome.runtime.sendMessage({ type: 'PROBE_CAPABILITIES' })) as {
+          userScripts: boolean;
+        };
+        toggleOn = probe.userScripts;
+      } catch {
+        toggleOn = false;
+      }
+    }
+    if (toggleOn) {
+      statusLine.textContent = '✓ Ready — AI behaviors run on every site, including strict-CSP pages.';
+      grantBtn.style.display = 'none';
+    } else if (hasPermission) {
+      statusLine.textContent =
+        'Almost there: open chrome://extensions, find Morph, and turn on “Allow user scripts” (Chrome 138+; on older Chrome enable Developer mode). Morph works without this — but on sites with a strict Content-Security-Policy, interactive behaviors will be skipped.';
+      grantBtn.style.display = 'none';
+    } else {
+      statusLine.textContent =
+        'Optional: without this, styling and layout edits work everywhere, but AI-generated interactions (click handlers, animations, keyboard shortcuts) are skipped on sites with a strict Content-Security-Policy.';
+      grantBtn.style.display = '';
+    }
+  }
+
+  grantBtn.addEventListener('click', () => {
+    void (async () => {
+      await chrome.permissions.request({ permissions: ['userScripts'] }).catch(() => false);
+      await refresh();
+    })();
+  });
+
+  void refresh();
+  return el('section', { class: 'card' }, [el('h2', {}, ['Advanced behaviors (optional)']), statusLine, grantBtn]);
 }
 
 void render();

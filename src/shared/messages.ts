@@ -24,6 +24,9 @@ export type RuntimeRequest =
   | { type: 'GET_PUBLIC_SETTINGS' }
   | { type: 'CAPTURE_VIEWPORT'; maxWidth: number; quality: number }
   | { type: 'SET_BADGE'; active: boolean }
+  | { type: 'INSTALL_PAGE_RUNTIME' }
+  | { type: 'EXEC_USER_SCRIPT'; code: string }
+  | { type: 'PROBE_CAPABILITIES' }
   | { type: 'OPEN_OPTIONS' };
 
 export interface RuntimeResponseMap {
@@ -31,6 +34,9 @@ export interface RuntimeResponseMap {
   /** base64 is JPEG data without the data-URL prefix. */
   CAPTURE_VIEWPORT: { base64: string | null; error?: string };
   SET_BADGE: { ok: true };
+  INSTALL_PAGE_RUNTIME: { ok: boolean; error?: string };
+  EXEC_USER_SCRIPT: { ok: boolean; error?: string };
+  PROBE_CAPABILITIES: { userScripts: boolean };
   OPEN_OPTIONS: { ok: true };
 }
 

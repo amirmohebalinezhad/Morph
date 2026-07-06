@@ -102,14 +102,3 @@ test('clarifying question is surfaced without touching the page', async ({ conte
   expect(await page.locator('#hero h1').getAttribute('style')).toBeNull();
 });
 
-test('behavior ops degrade gracefully before the runtime exists (M4)', async ({ context, activate }) => {
-  const page = await context.newPage();
-  await startEditing(page, activate);
-
-  await page.locator('#counter-btn').click();
-  await prompt(page, 'count clicks');
-
-  const lastMsg = page.locator('#morph-extension-root .chat-msg.assistant').last();
-  await expect(lastMsg).toHaveAttribute('data-morph-msg-status', 'done');
-  await expect(lastMsg).toContainText('Skipped');
-});

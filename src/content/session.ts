@@ -4,12 +4,13 @@
 import type { EditPlan } from '../shared/edit-ops';
 import { sendToBackground } from '../shared/messages';
 import { mountUI, type UIHandle } from '../ui/mount';
+import { PageBehaviorHost } from './behaviors/runtime-client';
 import { ChatController, type PlanOutcome } from './chat-controller';
 import { createChatStore, type ChatStore } from './chat-store';
 import { describeElement } from './dom-utils';
 import { EditModeController } from './edit-mode';
 import { HistoryController } from './history/history-controller';
-import { unavailableBehaviorHost, type ApplyDeps } from './ops/apply';
+import type { ApplyDeps } from './ops/apply';
 import { RefRegistry } from './refs/ref-registry';
 import { OverlayController } from './selection/overlays';
 import { createMorphStore, type MorphStore } from './store';
@@ -20,6 +21,7 @@ export class Session {
   readonly chat: ChatController;
   readonly refs: RefRegistry;
   readonly history: HistoryController;
+  readonly behaviors: PageBehaviorHost;
   private applyDeps: ApplyDeps;
   private ui: UIHandle;
   private overlays: OverlayController;
@@ -29,12 +31,8 @@ export class Session {
     this.store = createMorphStore();
     this.chatStore = createChatStore();
     this.refs = new RefRegistry();
-    this.applyDeps = {
-      refs: this.refs,
-      behaviors: unavailableBehaviorHost(
-        'Interactive behaviors need the Morph page runtime, which is not available yet.',
-      ),
-    };
+    this.behaviors = new PageBehaviorHost();
+    this.applyDeps = { refs: this.refs, behaviors: this.behaviors };
     this.ui = mountUI(this);
     this.overlays = new OverlayController(this.store, this.ui.overlayContainer);
     this.history = new HistoryController(this.store, this.applyDeps, () => this.overlays.schedule());

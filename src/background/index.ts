@@ -4,6 +4,8 @@
 // in the content script.
 import type { RuntimeRequest, RuntimeResponseMap } from '../shared/messages';
 import { AI_PORT_NAME, sendToTab } from '../shared/messages';
+import { executeUserScript, userScriptsAvailable } from './behavior-exec';
+import { installPageRuntime } from './page-runtime';
 import { captureAndScaleViewport } from './screenshot';
 import { handleAiPort } from './session-router';
 
@@ -73,6 +75,49 @@ function handleRuntimeMessage(
             error: err instanceof Error ? err.message : String(err),
           } satisfies RuntimeResponseMap['CAPTURE_VIEWPORT']);
         }
+      })();
+      return true;
+    }
+    case 'INSTALL_PAGE_RUNTIME': {
+      void (async () => {
+        try {
+          const tabId = sender.tab?.id;
+          if (tabId === undefined) throw new Error('no tab');
+          const results = await chrome.scripting.executeScript({
+            target: { tabId },
+            world: 'MAIN',
+            func: installPageRuntime,
+          });
+          sendResponse({
+            ok: results[0]?.result === true,
+          } satisfies RuntimeResponseMap['INSTALL_PAGE_RUNTIME']);
+        } catch (err) {
+          sendResponse({
+            ok: false,
+            error: err instanceof Error ? err.message : String(err),
+          } satisfies RuntimeResponseMap['INSTALL_PAGE_RUNTIME']);
+        }
+      })();
+      return true;
+    }
+    case 'EXEC_USER_SCRIPT': {
+      void (async () => {
+        const tabId = sender.tab?.id;
+        if (tabId === undefined) {
+          sendResponse({ ok: false, error: 'no tab' } satisfies RuntimeResponseMap['EXEC_USER_SCRIPT']);
+          return;
+        }
+        sendResponse(
+          (await executeUserScript(tabId, msg.code)) satisfies RuntimeResponseMap['EXEC_USER_SCRIPT'],
+        );
+      })();
+      return true;
+    }
+    case 'PROBE_CAPABILITIES': {
+      void (async () => {
+        sendResponse({
+          userScripts: await userScriptsAvailable(),
+        } satisfies RuntimeResponseMap['PROBE_CAPABILITIES']);
       })();
       return true;
     }
