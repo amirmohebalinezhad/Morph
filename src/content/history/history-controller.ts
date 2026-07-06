@@ -2,8 +2,8 @@
 // runs undo/redo/jump, and mirrors a serializable view into a zustand store
 // for the timeline UI.
 import { createStore } from 'zustand/vanilla';
-import { describeOp, type EditOp, type EditPlan } from '../../shared/edit-ops';
-import { applyPlan, type ApplyDeps, type ApplyResult } from '../ops/apply';
+import { describeOp, type EditPlan } from '../../shared/edit-ops';
+import { applyPlan, ApplyError, type ApplyDeps, type ApplyResult } from '../ops/apply';
 import type { MorphStore } from '../store';
 import { RevisionTree, type Revision, type RevisionKind } from './revision-tree';
 
@@ -45,6 +45,10 @@ function createHistoryViewStore() {
 export class HistoryController {
   readonly tree = new RevisionTree();
   readonly view: HistoryStore;
+  /** Wraps synchronous DOM-mutating tree ops so the sentinel ignores them. */
+  shield: <T>(fn: () => T) => T = (fn) => fn();
+  /** Wraps async DOM-mutating apply so the sentinel ignores them. */
+  shieldAsync: <T>(fn: () => Promise<T>) => Promise<T> = (fn) => fn();
 
   constructor(
     private morphStore: MorphStore,
@@ -70,23 +74,62 @@ export class HistoryController {
 
   /** Applies a synthesized (manual) plan and commits it in one step. */
   async applyAndCommitManual(instruction: string, plan: EditPlan): Promise<ApplyResult> {
-    const result = await applyPlan(plan, this.applyDeps);
+    const result = await this.shieldAsync(() => applyPlan(plan, this.applyDeps));
     this.commit('manual', instruction, plan, result);
     return result;
   }
 
   undo(): void {
-    if (this.tree.undo()) this.afterMutation();
+    if (this.shield(() => this.tree.undo())) this.afterMutation();
   }
 
   redo(): void {
-    if (this.tree.redo()) this.afterMutation();
+    if (this.shield(() => this.tree.redo())) this.afterMutation();
   }
 
   jumpTo(id: string): void {
     if (id === this.tree.head.id) return;
-    this.tree.checkout(id);
+    this.shield(() => this.tree.checkout(id));
     this.afterMutation();
+  }
+
+  /**
+   * Recovery after an external re-render clobbered edits: replays every
+   * applied revision root→head from its serializable ops (fresh ref
+   * resolution), rebuilding the live inverse closures. Ops that no longer
+   * resolve are dropped and their revision marked stale.
+   * Returns the count of revisions that could not be fully re-applied.
+   */
+  async replayFromRoot(): Promise<{ replayed: number; staleCount: number }> {
+    const lineage = this.tree.pathToRoot(this.tree.head.id).reverse().filter((r) => r.parentId !== null);
+    let staleCount = 0;
+    let replayed = 0;
+
+    for (const rev of lineage) {
+      if (rev.ops.length === 0) continue;
+      const plan: EditPlan = {
+        summary: rev.summary,
+        operations: rev.ops.map((op) => ({ ...op })),
+        question: null,
+        notes: null,
+      };
+      try {
+        const result = await applyPlan(plan, this.applyDeps);
+        rev.applied = result.applied;
+        rev.skipped = result.skipped;
+        rev.stale = false;
+        replayed += 1;
+      } catch (err) {
+        // Element(s) truly gone — keep the revision but mark it unrecoverable.
+        rev.applied = [];
+        rev.stale = true;
+        staleCount += 1;
+        if (!(err instanceof ApplyError)) console.warn('[morph] replay failed', err);
+      }
+    }
+
+    this.afterMutation();
+    return { replayed, staleCount };
   }
 
   appliedSummaries(): string[] {

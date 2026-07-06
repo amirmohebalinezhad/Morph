@@ -15,6 +15,8 @@ export class OverlayController {
   private ro: ResizeObserver;
   private disposers: Array<() => void> = [];
 
+  private marqueeBox: HTMLDivElement;
+
   constructor(
     private store: MorphStore,
     container: HTMLElement,
@@ -28,6 +30,11 @@ export class OverlayController {
     this.hoverLabel.className = 'morph-box-label';
     this.hoverBox.appendChild(this.hoverLabel);
     this.layer.appendChild(this.hoverBox);
+
+    this.marqueeBox = document.createElement('div');
+    this.marqueeBox.className = 'morph-marquee';
+    this.marqueeBox.style.display = 'none';
+    this.layer.appendChild(this.marqueeBox);
 
     container.appendChild(this.layer);
 
@@ -135,6 +142,18 @@ export class OverlayController {
     for (let i = visible.length; i < this.selBoxes.length; i++) {
       this.selBoxes[i]!.style.display = 'none';
     }
+  }
+
+  /** MarqueeController feeds the drag rectangle here (viewport coords). */
+  setMarquee(rect: { x: number; y: number; w: number; h: number } | null): void {
+    if (!rect) {
+      this.marqueeBox.style.display = 'none';
+      return;
+    }
+    this.marqueeBox.style.display = 'block';
+    this.marqueeBox.style.transform = `translate(${rect.x}px, ${rect.y}px)`;
+    this.marqueeBox.style.width = `${rect.w}px`;
+    this.marqueeBox.style.height = `${rect.h}px`;
   }
 
   destroy(): void {

@@ -1,6 +1,8 @@
+import { useState } from 'react';
 import { useStore } from 'zustand';
 import type { Session } from '../../content/session';
 import type { RevisionView } from '../../content/history/history-controller';
+import { CompareView } from './CompareView';
 
 function RevisionRow({ rev, session }: { rev: RevisionView; session: Session }) {
   const icon = rev.id === 'root' ? '⌂' : rev.kind === 'ai' ? '✦' : '✎';
@@ -51,9 +53,22 @@ function RevisionRow({ rev, session }: { rev: RevisionView; session: Session }) 
 
 export function Timeline({ session }: { session: Session }) {
   const lineage = useStore(session.history.view, (s) => s.lineage);
+  const [comparing, setComparing] = useState(false);
+
+  if (comparing) return <CompareView session={session} onClose={() => setComparing(false)} />;
 
   return (
     <div className="tl" data-morph-timeline>
+      {lineage.length > 2 && (
+        <button
+          type="button"
+          className="tl-compare"
+          data-morph-btn="open-compare"
+          onClick={() => setComparing(true)}
+        >
+          Compare revisions
+        </button>
+      )}
       {lineage.map((rev) => (
         <RevisionRow key={rev.id} rev={rev} session={session} />
       ))}

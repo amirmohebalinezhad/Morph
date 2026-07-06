@@ -15,7 +15,9 @@ import { ManualGizmo } from './manual/gizmo';
 import { ManualEditCoalescer } from './manual/manual-commit';
 import type { ApplyDeps } from './ops/apply';
 import { RefRegistry } from './refs/ref-registry';
+import { MarqueeController } from './selection/marquee';
 import { OverlayController } from './selection/overlays';
+import { Sentinel } from './sentinel';
 import { createMorphStore, type MorphStore } from './store';
 
 export class Session {
@@ -26,12 +28,16 @@ export class Session {
   readonly history: HistoryController;
   readonly behaviors: PageBehaviorHost;
   readonly exporter: ExportController;
+  readonly sentinel: Sentinel;
   private applyDeps: ApplyDeps;
   private ui: UIHandle;
   private overlays: OverlayController;
   private editMode: EditModeController;
   private coalescer: ManualEditCoalescer;
   private gizmo: ManualGizmo;
+  private marquee: MarqueeController;
+  /** Timestamp until which click-selection is suppressed (after a marquee). */
+  private suppressClickUntil = 0;
 
   constructor() {
     this.store = createMorphStore();
@@ -41,10 +47,19 @@ export class Session {
     this.applyDeps = { refs: this.refs, behaviors: this.behaviors };
     this.ui = mountUI(this);
     this.overlays = new OverlayController(this.store, this.ui.overlayContainer);
+    this.sentinel = new Sentinel({
+      trackedElements: () => this.refs.trackedElements(),
+      onStale: () => {},
+    });
+
     this.history = new HistoryController(this.store, this.applyDeps, () => {
       this.overlays.schedule();
       this.gizmo.schedule();
     });
+    // Shield Morph's own DOM mutations from the sentinel (which watches for
+    // page-initiated re-renders, not our edits).
+    this.history.shield = (fn) => this.sentinel.shield(fn);
+    this.history.shieldAsync = (fn) => this.sentinel.suspendDuring(fn);
 
     const manualDeps = {
       describe: (el: Element) => describeElement(el),
@@ -55,11 +70,18 @@ export class Session {
     this.coalescer = new ManualEditCoalescer(manualDeps);
     this.gizmo = new ManualGizmo(this.store, this.ui.overlayContainer, manualDeps);
     this.exporter = new ExportController(this.history, this.behaviors, this.chatStore);
+    this.marquee = new MarqueeController(this.store, {
+      setRect: (rect) => this.overlays.setMarquee(rect),
+      suppressNextClick: () => {
+        this.suppressClickUntil = Date.now() + 350;
+      },
+    });
     this.editMode = new EditModeController(this.store, {
       onPromptRequested: () => this.ui.focusPrompt(),
       onUndo: () => this.history.undo(),
       onRedo: () => this.history.redo(),
       onDeleteRequested: () => void this.deleteSelection(),
+      shouldSuppressClick: () => Date.now() < this.suppressClickUntil,
     });
 
     this.chat = new ChatController({
@@ -67,6 +89,7 @@ export class Session {
       chat: this.chatStore,
       applyDeps: this.applyDeps,
       hideUIDuring: (fn) => this.hideUIDuring(fn),
+      shield: (fn) => this.sentinel.suspendDuring(fn),
       onPlanApplied: (outcome) => this.recordPlan(outcome),
       getRevisionSummaries: () => this.history.appliedSummaries(),
     });
@@ -77,11 +100,22 @@ export class Session {
         if (state.active) {
           document.documentElement.dataset['morphActive'] = 'true';
           void this.chat.refreshSettings();
+          this.sentinel.start();
         } else {
           delete document.documentElement.dataset['morphActive'];
+          this.sentinel.stop();
         }
       }
     });
+  }
+
+  /** Re-apply all edits after the page re-rendered over them. */
+  async recoverFromReRender(): Promise<void> {
+    const { staleCount } = await this.sentinel.suspendDuring(() => this.history.replayFromRoot());
+    this.sentinel.reset();
+    if (staleCount > 0) {
+      this.chat.noteExternalChange(`${staleCount} edit(s) could not be re-applied after a page re-render.`);
+    }
   }
 
   get active(): boolean {

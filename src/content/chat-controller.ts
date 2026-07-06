@@ -23,6 +23,8 @@ export interface ChatControllerDeps {
   applyDeps: ApplyDeps;
   /** Hides the Morph UI (overlays + panels) while fn runs — for screenshots. */
   hideUIDuring<T>(fn: () => Promise<T>): Promise<T>;
+  /** Wraps DOM-mutating apply so the sentinel ignores Morph's own changes. */
+  shield<T>(fn: () => Promise<T>): Promise<T>;
   /** Called after a plan applies successfully (M3 commits a revision here). */
   onPlanApplied(outcome: PlanOutcome): void;
   /** Summaries of currently-applied revisions, oldest first. */
@@ -91,7 +93,7 @@ export class ChatController {
         return;
       }
 
-      const result = await applyPlan(plan, this.deps.applyDeps);
+      const result = await this.deps.shield(() => applyPlan(plan, this.deps.applyDeps));
       this.deps.onPlanApplied({ instruction, plan, result });
 
       const digest = plan.operations.map(describeOp).join('; ');

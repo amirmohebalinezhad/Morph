@@ -41,6 +41,15 @@
   outline: 2px solid var(--m-accent-2);
   background: rgba(75, 214, 177, 0.06);
 }
+.morph-marquee {
+  position: fixed;
+  top: 0;
+  left: 0;
+  display: none;
+  pointer-events: none;
+  border: 1px solid var(--m-accent);
+  background: rgba(124, 108, 255, 0.12);
+}
 .morph-box-label {
   position: absolute;
   top: -24px;
@@ -862,4 +871,142 @@
 }
 .modal-actions .ghost:hover {
   background: var(--m-bg2);
+}
+
+/* ------------------------------------------------------------------ */
+/* Recovery toast                                                      */
+
+.morph-recovery {
+  position: fixed;
+  bottom: 60px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  max-width: min(92vw, 560px);
+  background: #2a2130;
+  border: 1px solid var(--m-danger);
+  border-radius: 10px;
+  padding: 10px 12px;
+  box-shadow: var(--m-shadow);
+  pointer-events: auto;
+  z-index: 9;
+}
+.rec-icon {
+  color: var(--m-danger);
+  font-size: 15px;
+}
+.rec-text {
+  font-size: 12.5px;
+  flex: 1;
+}
+.rec-apply {
+  background: var(--m-danger);
+  color: #fff;
+  border: 0;
+  border-radius: 7px;
+  font: inherit;
+  font-size: 12px;
+  font-weight: 600;
+  padding: 6px 12px;
+  cursor: pointer;
+  white-space: nowrap;
+}
+.rec-apply:disabled {
+  opacity: 0.6;
+  cursor: default;
+}
+.rec-dismiss {
+  background: transparent;
+  border: 0;
+  color: var(--m-muted);
+  cursor: pointer;
+  font-size: 13px;
+}
+
+/* ------------------------------------------------------------------ */
+/* Compare view                                                        */
+
+.tl-compare {
+  margin: 4px 4px 8px;
+  background: var(--m-bg2);
+  border: 1px solid var(--m-border);
+  color: var(--m-fg);
+  border-radius: 7px;
+  font: inherit;
+  font-size: 12px;
+  font-weight: 600;
+  padding: 7px;
+  cursor: pointer;
+}
+.cmp {
+  display: flex;
+  flex-direction: column;
+  max-height: 52vh;
+}
+.cmp-bar {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px;
+  border-bottom: 1px solid var(--m-border);
+}
+.cmp-bar select {
+  flex: 1;
+  min-width: 0;
+  background: var(--m-bg);
+  border: 1px solid var(--m-border);
+  border-radius: 6px;
+  color: var(--m-fg);
+  font: inherit;
+  font-size: 11.5px;
+  padding: 5px 6px;
+}
+.cmp-vs {
+  color: var(--m-muted);
+  font-size: 11px;
+}
+.cmp-cols {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1px;
+  background: var(--m-border);
+  overflow-y: auto;
+}
+.cmp-col {
+  background: var(--m-bg2);
+  padding: 10px;
+  min-width: 0;
+}
+.cmp-col.empty {
+  color: var(--m-muted);
+  font-size: 12px;
+  padding: 16px;
+}
+.cmp-head {
+  font-size: 12px;
+  font-weight: 700;
+  margin-bottom: 4px;
+}
+.cmp-summary {
+  font-size: 11px;
+  color: var(--m-muted);
+  margin-bottom: 8px;
+}
+.cmp-ops {
+  margin: 0;
+  padding-left: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+.cmp-op {
+  font: 10.5px/1.4 ui-monospace, SFMono-Regular, Menlo, monospace;
+  word-break: break-word;
+}
+.cmp-op.muted {
+  color: var(--m-muted);
+  list-style: none;
+  margin-left: -16px;
 }

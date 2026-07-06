@@ -14,6 +14,8 @@ export interface EditModeHooks {
   onDeleteRequested?: () => void;
   onUndo?: () => void;
   onRedo?: () => void;
+  /** True right after a marquee drag, so click-selection is skipped. */
+  shouldSuppressClick?: () => boolean;
 }
 
 const BLOCKED_EVENTS = [
@@ -98,6 +100,7 @@ export class EditModeController {
   }
 
   private handleSelectClick(ev: MouseEvent): void {
+    if (this.hooks.shouldSuppressClick?.()) return; // a marquee just ran
     const el = deepElementFromPoint(ev.clientX, ev.clientY);
     if (!el) return;
     this.store.getState().select(el, { additive: ev.shiftKey });

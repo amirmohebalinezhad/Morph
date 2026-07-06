@@ -19,6 +19,16 @@ export class RefRegistry {
   private counter = 0;
   private newRefCounter = 0;
 
+  /** Live elements currently addressable by a ref (for the sentinel). */
+  trackedElements(): Element[] {
+    const out: Element[] = [];
+    for (const rec of this.byRef.values()) {
+      const el = rec.weak.deref();
+      if (el) out.push(el);
+    }
+    return out;
+  }
+
   /**
    * Returns `proposed` if it is still free, otherwise a fresh unique n-ref.
    * Needed because the model restarts its newRef numbering (n1, n2…) on
