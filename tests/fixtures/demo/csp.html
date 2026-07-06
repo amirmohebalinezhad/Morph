@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>Strict CSP page — Morph demo fixture</title>
+  <link rel="stylesheet" href="/styles.css" />
+</head>
+<body>
+  <main class="layout">
+    <section class="hero">
+      <h1>Strict CSP page</h1>
+      <p class="subtitle">Served with <code>script-src 'self'</code> and Trusted Types enforcement. Inline script injection is blocked here.</p>
+      <div class="hero-actions">
+        <button class="btn btn-primary" id="csp-btn" data-testid="csp-btn">A button</button>
+      </div>
+    </section>
+    <section class="panel">
+      <h2>Content</h2>
+      <p id="csp-text">Editable text content on a locked-down page.</p>
+    </section>
+  </main>
+  <script src="/csp.js"></script>
+</body>
+</html>
