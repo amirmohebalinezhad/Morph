@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import type { Session } from '../../content/session';
 import { ChatPanel } from './ChatPanel';
+import { InspectPanel } from './InspectPanel';
 import { Timeline } from './Timeline';
 
 type DockTab = 'chat' | 'timeline' | 'inspect';
@@ -52,12 +53,7 @@ export function Dock({ session }: { session: Session }) {
       <div className="dock-body">
         {tab === 'chat' && <ChatPanel session={session} />}
         {tab === 'timeline' && <Timeline session={session} />}
-        {tab === 'inspect' && (
-          <div className="dock-placeholder" data-morph-pane="inspect">
-            <p className="ph-title">Inspect</p>
-            <p className="ph-hint">Style editors arrive in a later milestone.</p>
-          </div>
-        )}
+        {tab === 'inspect' && <InspectPanel session={session} />}
       </div>
     </div>
   );

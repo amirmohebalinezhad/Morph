@@ -542,3 +542,168 @@
 .tl-empty {
   padding: 8px;
 }
+
+/* ------------------------------------------------------------------ */
+/* Inspect panel                                                       */
+
+.inspect {
+  padding: 12px;
+  overflow-y: auto;
+  max-height: 52vh;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.in-target {
+  font: 11px/1.3 ui-monospace, SFMono-Regular, Menlo, monospace;
+  color: var(--m-accent-2);
+  background: rgba(75, 214, 177, 0.08);
+  border: 1px solid rgba(75, 214, 177, 0.25);
+  border-radius: 7px;
+  padding: 6px 8px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.in-section {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.in-title {
+  font-size: 10.5px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--m-muted);
+}
+.in-grid4 {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 6px;
+}
+.in-row {
+  display: flex;
+  gap: 8px;
+  align-items: flex-end;
+}
+.in-num,
+.in-select,
+.in-color {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  font-size: 10.5px;
+  color: var(--m-muted);
+  min-width: 0;
+}
+.in-num input,
+.in-select select {
+  width: 100%;
+  min-width: 52px;
+  background: var(--m-bg);
+  border: 1px solid var(--m-border);
+  border-radius: 6px;
+  color: var(--m-fg);
+  font: inherit;
+  font-size: 12px;
+  padding: 5px 6px;
+}
+.in-color input {
+  width: 44px;
+  height: 28px;
+  padding: 2px;
+  background: var(--m-bg);
+  border: 1px solid var(--m-border);
+  border-radius: 6px;
+  cursor: pointer;
+}
+.in-seg {
+  display: inline-flex;
+  background: var(--m-bg);
+  border: 1px solid var(--m-border);
+  border-radius: 7px;
+  padding: 2px;
+  align-self: flex-start;
+}
+.in-seg button {
+  font: inherit;
+  font-size: 12px;
+  background: transparent;
+  color: var(--m-muted);
+  border: 0;
+  border-radius: 5px;
+  padding: 4px 10px;
+  cursor: pointer;
+}
+.in-seg button.on {
+  background: var(--m-accent);
+  color: #fff;
+}
+.in-slider {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  font-size: 10.5px;
+  color: var(--m-muted);
+}
+.in-slider input {
+  width: 100%;
+  accent-color: var(--m-accent);
+}
+.in-hint {
+  margin: 0;
+  color: var(--m-muted);
+  font-size: 11px;
+  line-height: 1.5;
+}
+
+/* ------------------------------------------------------------------ */
+/* Resize / move gizmo                                                 */
+
+.morph-gizmo {
+  position: fixed;
+  top: 0;
+  left: 0;
+  pointer-events: none;
+  /* Above the highlight overlays, below the toolbar/dock chrome. */
+  z-index: 1;
+}
+.morph-gizmo-handle {
+  position: absolute;
+  width: 9px;
+  height: 9px;
+  background: #fff;
+  border: 1.5px solid var(--m-accent-2);
+  border-radius: 2px;
+  pointer-events: auto;
+}
+.morph-gizmo-handle.dir-nw { top: -5px; left: -5px; }
+.morph-gizmo-handle.dir-n  { top: -5px; left: calc(50% - 4.5px); }
+.morph-gizmo-handle.dir-ne { top: -5px; right: -5px; }
+.morph-gizmo-handle.dir-e  { top: calc(50% - 4.5px); right: -5px; }
+.morph-gizmo-handle.dir-se { bottom: -5px; right: -5px; }
+.morph-gizmo-handle.dir-s  { bottom: -5px; left: calc(50% - 4.5px); }
+.morph-gizmo-handle.dir-sw { bottom: -5px; left: -5px; }
+.morph-gizmo-handle.dir-w  { top: calc(50% - 4.5px); left: -5px; }
+.morph-gizmo-move {
+  position: absolute;
+  top: -13px;
+  left: calc(50% - 26px);
+  transform: translateX(-50%);
+  width: 22px;
+  height: 22px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--m-accent-2);
+  color: #0c2b21;
+  font-size: 13px;
+  border-radius: 50%;
+  cursor: grab;
+  pointer-events: auto;
+  box-shadow: var(--m-shadow);
+}
+.morph-gizmo-move:active {
+  cursor: grabbing;
+}

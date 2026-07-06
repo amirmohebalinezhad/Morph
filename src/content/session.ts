@@ -10,6 +10,8 @@ import { createChatStore, type ChatStore } from './chat-store';
 import { describeElement } from './dom-utils';
 import { EditModeController } from './edit-mode';
 import { HistoryController } from './history/history-controller';
+import { ManualGizmo } from './manual/gizmo';
+import { ManualEditCoalescer } from './manual/manual-commit';
 import type { ApplyDeps } from './ops/apply';
 import { RefRegistry } from './refs/ref-registry';
 import { OverlayController } from './selection/overlays';
@@ -26,6 +28,8 @@ export class Session {
   private ui: UIHandle;
   private overlays: OverlayController;
   private editMode: EditModeController;
+  private coalescer: ManualEditCoalescer;
+  private gizmo: ManualGizmo;
 
   constructor() {
     this.store = createMorphStore();
@@ -35,7 +39,19 @@ export class Session {
     this.applyDeps = { refs: this.refs, behaviors: this.behaviors };
     this.ui = mountUI(this);
     this.overlays = new OverlayController(this.store, this.ui.overlayContainer);
-    this.history = new HistoryController(this.store, this.applyDeps, () => this.overlays.schedule());
+    this.history = new HistoryController(this.store, this.applyDeps, () => {
+      this.overlays.schedule();
+      this.gizmo.schedule();
+    });
+
+    const manualDeps = {
+      describe: (el: Element) => describeElement(el),
+      refFor: (el: Element) => this.refs.refFor(el),
+      commit: (instruction: string, plan: EditPlan) => this.history.applyAndCommitManual(instruction, plan),
+      onCommitted: (summary: string) => this.chat.noteExternalChange(summary),
+    };
+    this.coalescer = new ManualEditCoalescer(manualDeps);
+    this.gizmo = new ManualGizmo(this.store, this.ui.overlayContainer, manualDeps);
     this.editMode = new EditModeController(this.store, {
       onPromptRequested: () => this.ui.focusPrompt(),
       onUndo: () => this.history.undo(),
@@ -81,6 +97,11 @@ export class Session {
 
   openOptions(): void {
     void sendToBackground({ type: 'OPEN_OPTIONS' }).catch(() => {});
+  }
+
+  /** Inspector editors stage live-previewed style changes here (debounced commit). */
+  manualStage(el: Element, property: string, cssValue: string): void {
+    this.coalescer.stage(el, property, cssValue);
   }
 
   private recordPlan(outcome: PlanOutcome): void {
@@ -135,6 +156,7 @@ export class Session {
   destroy(): void {
     this.editMode.destroy();
     this.overlays.destroy();
+    this.gizmo.destroy();
     this.ui.unmount();
   }
 }
