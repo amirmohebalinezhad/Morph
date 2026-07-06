@@ -17,6 +17,31 @@ export class RefRegistry {
   private byRef = new Map<string, RefRecord>();
   private byElement = new WeakMap<Element, string>();
   private counter = 0;
+  private newRefCounter = 0;
+
+  /**
+   * Returns `proposed` if it is still free, otherwise a fresh unique n-ref.
+   * Needed because the model restarts its newRef numbering (n1, n2…) on
+   * every plan, and manual edits mint refs too.
+   */
+  uniqueNewRef(proposed?: string): string {
+    if (proposed && !this.isRefTaken(proposed)) return proposed;
+    let ref: string;
+    do {
+      this.newRefCounter += 1;
+      ref = `n${this.newRefCounter}x`;
+    } while (this.isRefTaken(ref));
+    return ref;
+  }
+
+  private isRefTaken(ref: string): boolean {
+    if (this.byRef.has(ref)) return true;
+    try {
+      return document.querySelector(`[${MORPH_ID_ATTR}="${cssAttrEscape(ref)}"]`) !== null;
+    } catch {
+      return true;
+    }
+  }
 
   /** Existing ref for the element, or assigns the next `e<N>` ref. */
   refFor(el: Element): string {

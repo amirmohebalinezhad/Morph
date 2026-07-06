@@ -1,12 +1,15 @@
 // Per-page composition root: wires the store, engines, and UI together.
 // Created once on first activation; toggling off hides the UI and removes
 // listeners but keeps state (history survives until the page unloads).
+import type { EditPlan } from '../shared/edit-ops';
 import { sendToBackground } from '../shared/messages';
 import { mountUI, type UIHandle } from '../ui/mount';
 import { ChatController, type PlanOutcome } from './chat-controller';
 import { createChatStore, type ChatStore } from './chat-store';
+import { describeElement } from './dom-utils';
 import { EditModeController } from './edit-mode';
-import { unavailableBehaviorHost } from './ops/apply';
+import { HistoryController } from './history/history-controller';
+import { unavailableBehaviorHost, type ApplyDeps } from './ops/apply';
 import { RefRegistry } from './refs/ref-registry';
 import { OverlayController } from './selection/overlays';
 import { createMorphStore, type MorphStore } from './store';
@@ -16,34 +19,39 @@ export class Session {
   readonly chatStore: ChatStore;
   readonly chat: ChatController;
   readonly refs: RefRegistry;
+  readonly history: HistoryController;
+  private applyDeps: ApplyDeps;
   private ui: UIHandle;
   private overlays: OverlayController;
   private editMode: EditModeController;
-  /** M2: flat log of applied plans; M3 replaces this with the revision tree. */
-  private appliedSummaries: string[] = [];
 
   constructor() {
     this.store = createMorphStore();
     this.chatStore = createChatStore();
     this.refs = new RefRegistry();
+    this.applyDeps = {
+      refs: this.refs,
+      behaviors: unavailableBehaviorHost(
+        'Interactive behaviors need the Morph page runtime, which is not available yet.',
+      ),
+    };
     this.ui = mountUI(this);
     this.overlays = new OverlayController(this.store, this.ui.overlayContainer);
+    this.history = new HistoryController(this.store, this.applyDeps, () => this.overlays.schedule());
     this.editMode = new EditModeController(this.store, {
       onPromptRequested: () => this.ui.focusPrompt(),
+      onUndo: () => this.history.undo(),
+      onRedo: () => this.history.redo(),
+      onDeleteRequested: () => void this.deleteSelection(),
     });
 
     this.chat = new ChatController({
       store: this.store,
       chat: this.chatStore,
-      applyDeps: {
-        refs: this.refs,
-        behaviors: unavailableBehaviorHost(
-          'Interactive behaviors need the Morph page runtime, which is not available yet.',
-        ),
-      },
+      applyDeps: this.applyDeps,
       hideUIDuring: (fn) => this.hideUIDuring(fn),
       onPlanApplied: (outcome) => this.recordPlan(outcome),
-      getRevisionSummaries: () => [...this.appliedSummaries],
+      getRevisionSummaries: () => this.history.appliedSummaries(),
     });
 
     this.store.subscribe((state, prev) => {
@@ -78,7 +86,41 @@ export class Session {
   }
 
   private recordPlan(outcome: PlanOutcome): void {
-    this.appliedSummaries.push(outcome.plan.summary);
+    this.history.commit('ai', outcome.instruction, outcome.plan, outcome.result);
+  }
+
+  /** Toolbar/keyboard delete: remove every selected element as one revision. */
+  async deleteSelection(): Promise<void> {
+    const selection = this.store.getState().selection.filter((el) => el.isConnected);
+    if (!selection.length) return;
+    const names = selection.map((el) => describeElement(el)).join(', ');
+    const plan: EditPlan = {
+      summary: `Deleted ${names}.`,
+      operations: selection.map((el) => ({ op: 'removeElement', ref: this.refs.refFor(el) })),
+      question: null,
+      notes: null,
+    };
+    this.store.getState().clearSelection();
+    await this.history.applyAndCommitManual(`Manual: delete ${names}`, plan);
+    this.chat.noteExternalChange(plan.summary);
+  }
+
+  /** Toolbar duplicate: clone the primary selected element. */
+  async duplicateSelection(): Promise<void> {
+    const selection = this.store.getState().selection.filter((el) => el.isConnected);
+    const primary = selection[selection.length - 1];
+    if (!primary) return;
+    const name = describeElement(primary);
+    const plan: EditPlan = {
+      summary: `Duplicated ${name}.`,
+      operations: [
+        { op: 'duplicateElement', ref: this.refs.refFor(primary), newRef: this.refs.uniqueNewRef() },
+      ],
+      question: null,
+      notes: null,
+    };
+    await this.history.applyAndCommitManual(`Manual: duplicate ${name}`, plan);
+    this.chat.noteExternalChange(plan.summary);
   }
 
   /** Hides all Morph chrome (panels + overlays) while fn runs — screenshots. */

@@ -433,3 +433,112 @@
 .chat-send.cancel {
   background: var(--m-danger);
 }
+
+/* ------------------------------------------------------------------ */
+/* Timeline                                                            */
+
+.tl {
+  padding: 8px;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  max-height: 52vh;
+}
+.tl-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  border-radius: 8px;
+}
+.tl-row.head {
+  background: rgba(124, 108, 255, 0.14);
+  outline: 1px solid rgba(124, 108, 255, 0.4);
+}
+.tl-row.ahead {
+  opacity: 0.45;
+}
+.tl-main {
+  flex: 1;
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  text-align: left;
+  background: transparent;
+  border: 0;
+  border-radius: 8px;
+  padding: 7px 9px;
+  cursor: pointer;
+  color: var(--m-fg);
+  font: inherit;
+  min-width: 0;
+}
+.tl-row:not(.head) .tl-main:hover {
+  background: var(--m-bg);
+}
+.tl-icon {
+  flex: none;
+  width: 18px;
+  color: var(--m-accent);
+}
+.tl-text {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+.tl-instruction {
+  font-size: 12px;
+  font-weight: 600;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.tl-summary {
+  font-size: 11px;
+  color: var(--m-muted);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.tl-badge {
+  align-self: flex-start;
+  font-size: 10px;
+  font-weight: 700;
+  border-radius: 4px;
+  padding: 1px 5px;
+  margin-top: 2px;
+}
+.tl-badge.warn {
+  background: rgba(232, 176, 84, 0.15);
+  color: #e8b054;
+}
+.tl-badge.stale {
+  background: rgba(255, 92, 122, 0.15);
+  color: var(--m-danger);
+}
+.tl-branch {
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  font-size: 10.5px;
+  color: var(--m-accent-2);
+  padding-right: 6px;
+  white-space: nowrap;
+}
+.tl-branch-btn {
+  background: transparent;
+  border: 0;
+  color: var(--m-accent-2);
+  font-size: 13px;
+  cursor: pointer;
+  padding: 2px 3px;
+  border-radius: 4px;
+}
+.tl-branch-btn:hover {
+  background: var(--m-bg);
+}
+.tl-empty {
+  padding: 8px;
+}

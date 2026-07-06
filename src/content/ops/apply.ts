@@ -81,12 +81,34 @@ function quiet(fn: () => void): void {
 }
 
 /**
+ * Rewrites the plan's refs in place so every newRef is globally unique (the
+ * model restarts n1, n2… numbering per plan) and later ops that reference a
+ * renamed newRef follow it. The stored ops then match the page exactly.
+ */
+function normalizePlanRefs(plan: EditPlan, refs: RefRegistry): void {
+  const aliases = new Map<string, string>();
+  const rename = (ref: string) => aliases.get(ref) ?? ref;
+
+  for (const op of plan.operations) {
+    if ('ref' in op) op.ref = rename(op.ref);
+    if ('targetRef' in op) op.targetRef = rename(op.targetRef);
+    if ('refs' in op) op.refs = op.refs.map(rename);
+    if ('newRef' in op) {
+      const unique = refs.uniqueNewRef(op.newRef);
+      if (unique !== op.newRef) aliases.set(op.newRef, unique);
+      op.newRef = unique;
+    }
+  }
+}
+
+/**
  * Applies the plan sequentially (later ops may reference n-refs created by
  * earlier ones). Throws ApplyError after rolling back on DOM-op failure.
  */
 export async function applyPlan(plan: EditPlan, deps: ApplyDeps): Promise<ApplyResult> {
   const applied: AppliedOp[] = [];
   const skipped: SkippedOp[] = [];
+  normalizePlanRefs(plan, deps.refs);
 
   for (let i = 0; i < plan.operations.length; i++) {
     const op = plan.operations[i]!;
@@ -116,6 +138,7 @@ async function executeOp(op: EditOp, deps: ApplyDeps): Promise<AppliedOp | { ski
       const el = mustResolve(refs, op.ref) as HTMLElement | SVGElement;
       refs.stamp(op.ref, el);
       const style = el.style;
+      const hadStyleAttr = el.hasAttribute('style');
       const prev = op.styles.map((s) => ({
         property: s.property,
         value: style.getPropertyValue(s.property),
@@ -141,6 +164,8 @@ async function executeOp(op: EditOp, deps: ApplyDeps): Promise<AppliedOp | { ski
               if (p.value === '') style.removeProperty(p.property);
               else style.setProperty(p.property, p.value, p.priority);
             }
+            // Don't leave an empty style="" behind on pristine elements.
+            if (!hadStyleAttr && style.length === 0) el.removeAttribute('style');
           }),
         redo: () => quiet(apply),
       };

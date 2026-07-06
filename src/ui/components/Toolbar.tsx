@@ -26,6 +26,8 @@ function IconButton(props: {
 export function Toolbar({ session }: { session: Session }) {
   const mode = useStore(session.store, (s) => s.mode);
   const selectionCount = useStore(session.store, (s) => s.selection.length);
+  const canUndo = useStore(session.history.view, (s) => s.canUndo);
+  const canRedo = useStore(session.history.view, (s) => s.canRedo);
   const st = session.store.getState();
 
   return (
@@ -65,6 +67,34 @@ export function Toolbar({ session }: { session: Session }) {
       </span>
 
       <div className="spacer" />
+
+      <IconButton id="undo" title="Undo (Ctrl/⌘+Z)" disabled={!canUndo} onClick={() => session.history.undo()}>
+        ↶
+      </IconButton>
+      <IconButton
+        id="redo"
+        title="Redo (Shift+Ctrl/⌘+Z)"
+        disabled={!canRedo}
+        onClick={() => session.history.redo()}
+      >
+        ↷
+      </IconButton>
+      <IconButton
+        id="duplicate"
+        title="Duplicate selected element"
+        disabled={selectionCount === 0}
+        onClick={() => void session.duplicateSelection()}
+      >
+        ⧉
+      </IconButton>
+      <IconButton
+        id="delete"
+        title="Delete selected element(s) (Del)"
+        disabled={selectionCount === 0}
+        onClick={() => void session.deleteSelection()}
+      >
+        🗑
+      </IconButton>
 
       <IconButton id="settings" title="Morph settings" onClick={() => session.openOptions()}>
         ⚙
