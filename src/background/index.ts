@@ -77,6 +77,14 @@ function handleRuntimeMessage(
       })();
       return true;
     }
+    case 'SET_BADGE': {
+      const tabId = sender.tab?.id;
+      if (tabId !== undefined) {
+        void chrome.action.setBadgeText({ tabId, text: msg.active ? 'ON' : '' });
+      }
+      sendResponse({ ok: true } satisfies RuntimeResponseMap['SET_BADGE']);
+      return false;
+    }
     case 'OPEN_OPTIONS': {
       void chrome.runtime.openOptionsPage();
       sendResponse({ ok: true } satisfies RuntimeResponseMap['OPEN_OPTIONS']);

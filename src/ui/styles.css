@@ -1,0 +1,281 @@
+/* Morph UI — scoped to the extension shadow root. Dark, compact, unobtrusive. */
+:host {
+  --m-bg: #1b1b24;
+  --m-bg2: #22222e;
+  --m-fg: #ececf3;
+  --m-muted: #9c9cb2;
+  --m-border: #34344a;
+  --m-accent: #7c6cff;
+  --m-accent-2: #4bd6b1;
+  --m-danger: #ff5c7a;
+  --m-shadow: 0 6px 24px rgba(0, 0, 0, 0.38);
+  --m-radius: 10px;
+  --m-font: 13px/1.45 system-ui, -apple-system, "Segoe UI", sans-serif;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+/* ------------------------------------------------------------------ */
+/* Overlay layer (imperative)                                          */
+
+.morph-overlays {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 1;
+}
+.morph-box {
+  position: fixed;
+  top: 0;
+  left: 0;
+  display: none;
+  pointer-events: none;
+}
+.morph-box-hover {
+  outline: 1.5px solid rgba(124, 108, 255, 0.9);
+  background: rgba(124, 108, 255, 0.08);
+}
+.morph-box-selected {
+  outline: 2px solid var(--m-accent-2);
+  background: rgba(75, 214, 177, 0.06);
+}
+.morph-box-label {
+  position: absolute;
+  top: -24px;
+  left: 0;
+  max-width: 60vw;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  background: #16161d;
+  color: var(--m-fg);
+  font: 11px/1.2 ui-monospace, SFMono-Regular, Menlo, monospace;
+  padding: 4px 7px;
+  border-radius: 5px;
+  border: 1px solid var(--m-border);
+  box-shadow: var(--m-shadow);
+}
+.morph-box-label.inside {
+  top: 2px;
+  left: 2px;
+}
+
+/* ------------------------------------------------------------------ */
+/* App chrome                                                          */
+
+.morph-app {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 0;
+  height: 0;
+  z-index: 2;
+  font: var(--m-font);
+  color: var(--m-fg);
+}
+
+.morph-toolbar {
+  position: fixed;
+  top: 12px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: var(--m-bg);
+  border: 1px solid var(--m-border);
+  border-radius: 99px;
+  padding: 6px 10px 6px 14px;
+  box-shadow: var(--m-shadow);
+  pointer-events: auto;
+  white-space: nowrap;
+}
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+}
+.brand-dot {
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--m-accent), var(--m-accent-2));
+}
+.seg {
+  display: flex;
+  background: var(--m-bg2);
+  border: 1px solid var(--m-border);
+  border-radius: 99px;
+  padding: 2px;
+}
+.seg-btn {
+  font: inherit;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--m-muted);
+  background: transparent;
+  border: 0;
+  border-radius: 99px;
+  padding: 4px 12px;
+  cursor: pointer;
+}
+.seg-btn.on {
+  background: var(--m-accent);
+  color: #fff;
+}
+.sel-count {
+  color: var(--m-muted);
+  font-size: 12px;
+}
+.spacer {
+  flex: 1;
+  min-width: 6px;
+}
+.mbtn {
+  font: inherit;
+  font-size: 13px;
+  width: 26px;
+  height: 26px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--m-muted);
+  background: transparent;
+  border: 0;
+  border-radius: 7px;
+  cursor: pointer;
+}
+.mbtn:hover:not(:disabled) {
+  background: var(--m-bg2);
+  color: var(--m-fg);
+}
+.mbtn:disabled {
+  opacity: 0.4;
+  cursor: default;
+}
+
+/* ------------------------------------------------------------------ */
+/* Breadcrumb                                                          */
+
+.morph-breadcrumb {
+  position: fixed;
+  bottom: 12px;
+  left: 50%;
+  transform: translateX(-50%);
+  max-width: min(90vw, 900px);
+  display: flex;
+  align-items: center;
+  overflow-x: auto;
+  scrollbar-width: thin;
+  background: var(--m-bg);
+  border: 1px solid var(--m-border);
+  border-radius: 9px;
+  padding: 5px 8px;
+  box-shadow: var(--m-shadow);
+  pointer-events: auto;
+}
+.crumb-wrap {
+  display: inline-flex;
+  align-items: center;
+}
+.crumb-sep {
+  color: var(--m-muted);
+  margin: 0 2px;
+}
+.crumb {
+  font: 11px/1.2 ui-monospace, SFMono-Regular, Menlo, monospace;
+  color: var(--m-muted);
+  background: transparent;
+  border: 0;
+  border-radius: 5px;
+  padding: 4px 6px;
+  cursor: pointer;
+  white-space: nowrap;
+}
+.crumb:hover {
+  background: var(--m-bg2);
+  color: var(--m-fg);
+}
+.crumb.on {
+  color: var(--m-accent-2);
+  background: rgba(75, 214, 177, 0.1);
+}
+
+/* ------------------------------------------------------------------ */
+/* Dock panel                                                          */
+
+.morph-dock {
+  position: fixed;
+  top: 64px;
+  right: 12px;
+  width: 340px;
+  max-height: calc(100vh - 140px);
+  display: flex;
+  flex-direction: column;
+  background: var(--m-bg);
+  border: 1px solid var(--m-border);
+  border-radius: var(--m-radius);
+  box-shadow: var(--m-shadow);
+  pointer-events: auto;
+  overflow: hidden;
+}
+.morph-dock-fab {
+  position: fixed;
+  top: 64px;
+  right: 12px;
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  border: 1px solid var(--m-border);
+  background: var(--m-bg);
+  color: var(--m-accent);
+  font-size: 16px;
+  cursor: pointer;
+  box-shadow: var(--m-shadow);
+  pointer-events: auto;
+}
+.dock-tabs {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  padding: 8px 8px 0;
+}
+.dock-tab {
+  font: inherit;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--m-muted);
+  background: transparent;
+  border: 0;
+  border-radius: 7px 7px 0 0;
+  padding: 6px 12px;
+  cursor: pointer;
+}
+.dock-tab.on {
+  color: var(--m-fg);
+  background: var(--m-bg2);
+}
+.dock-body {
+  background: var(--m-bg2);
+  flex: 1;
+  min-height: 120px;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+}
+.dock-placeholder {
+  padding: 18px 16px;
+}
+.ph-title {
+  margin: 0 0 6px;
+  font-weight: 700;
+}
+.ph-hint {
+  margin: 0;
+  color: var(--m-muted);
+  font-size: 12px;
+}

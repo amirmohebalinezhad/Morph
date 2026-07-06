@@ -21,11 +21,13 @@ export interface TabResponseMap {
 export type RuntimeRequest =
   | { type: 'GET_PUBLIC_SETTINGS' }
   | { type: 'CAPTURE_VIEWPORT'; maxWidth: number; quality: number }
+  | { type: 'SET_BADGE'; active: boolean }
   | { type: 'OPEN_OPTIONS' };
 
 export interface RuntimeResponseMap {
   GET_PUBLIC_SETTINGS: PublicSettings;
   CAPTURE_VIEWPORT: { dataUrl: string | null; error?: string };
+  SET_BADGE: { ok: true };
   OPEN_OPTIONS: { ok: true };
 }
 
