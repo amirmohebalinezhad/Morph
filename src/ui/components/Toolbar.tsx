@@ -96,6 +96,16 @@ export function Toolbar({ session }: { session: Session }) {
         🗑
       </IconButton>
 
+      <button
+        type="button"
+        className="export-btn"
+        data-morph-btn="export"
+        title="Generate an implementation prompt from all changes"
+        onClick={() => session.exporter.open()}
+      >
+        Export
+      </button>
+
       <IconButton id="settings" title="Morph settings" onClick={() => session.openOptions()}>
         ⚙
       </IconButton>

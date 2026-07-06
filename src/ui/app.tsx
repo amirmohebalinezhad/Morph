@@ -2,6 +2,7 @@ import { useStore } from 'zustand';
 import type { Session } from '../content/session';
 import { Breadcrumb } from './components/Breadcrumb';
 import { Dock } from './components/Dock';
+import { ExportDialog } from './components/ExportDialog';
 import { Toolbar } from './components/Toolbar';
 
 export function App({ session }: { session: Session }) {
@@ -12,6 +13,7 @@ export function App({ session }: { session: Session }) {
       <Toolbar session={session} />
       <Dock session={session} />
       <Breadcrumb session={session} />
+      <ExportDialog session={session} />
     </>
   );
 }

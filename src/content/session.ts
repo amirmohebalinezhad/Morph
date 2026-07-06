@@ -9,6 +9,7 @@ import { ChatController, type PlanOutcome } from './chat-controller';
 import { createChatStore, type ChatStore } from './chat-store';
 import { describeElement } from './dom-utils';
 import { EditModeController } from './edit-mode';
+import { ExportController } from './export-controller';
 import { HistoryController } from './history/history-controller';
 import { ManualGizmo } from './manual/gizmo';
 import { ManualEditCoalescer } from './manual/manual-commit';
@@ -24,6 +25,7 @@ export class Session {
   readonly refs: RefRegistry;
   readonly history: HistoryController;
   readonly behaviors: PageBehaviorHost;
+  readonly exporter: ExportController;
   private applyDeps: ApplyDeps;
   private ui: UIHandle;
   private overlays: OverlayController;
@@ -52,6 +54,7 @@ export class Session {
     };
     this.coalescer = new ManualEditCoalescer(manualDeps);
     this.gizmo = new ManualGizmo(this.store, this.ui.overlayContainer, manualDeps);
+    this.exporter = new ExportController(this.history, this.behaviors, this.chatStore);
     this.editMode = new EditModeController(this.store, {
       onPromptRequested: () => this.ui.focusPrompt(),
       onUndo: () => this.history.undo(),
