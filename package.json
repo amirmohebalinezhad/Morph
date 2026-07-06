@@ -1,0 +1,35 @@
+{
+  "name": "morph",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Morph — AI live UI prototyping Chrome extension. Select elements on any page, describe changes, prototype live, export an implementation prompt.",
+  "type": "module",
+  "scripts": {
+    "build": "node scripts/build.mjs",
+    "dev": "node scripts/build.mjs --watch",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "e2e": "node scripts/build.mjs --test && playwright test",
+    "package": "node scripts/build.mjs && node scripts/package.mjs"
+  },
+  "dependencies": {
+    "@anthropic-ai/sdk": "^0.57.0",
+    "dompurify": "^3.2.6",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "zod": "^4.0.5",
+    "zustand": "^5.0.6"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.54.0",
+    "@types/chrome": "^0.0.326",
+    "@types/node": "^22.15.0",
+    "@types/react": "^18.3.20",
+    "@types/react-dom": "^18.3.7",
+    "esbuild": "^0.25.5",
+    "happy-dom": "^18.0.1",
+    "typescript": "^5.8.3",
+    "vitest": "^3.2.4"
+  }
+}

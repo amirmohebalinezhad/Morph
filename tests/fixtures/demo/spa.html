@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>SPA re-render page — Morph demo fixture</title>
+  <link rel="stylesheet" href="/styles.css" />
+</head>
+<body>
+  <main class="layout">
+    <section class="hero">
+      <h1>Naive SPA page</h1>
+      <p class="subtitle">The region below is re-rendered from scratch on a timer, like a framework hydration pass. Morph's sentinel should detect edits being clobbered.</p>
+      <div class="hero-actions">
+        <button class="btn btn-secondary" id="rerender-btn" data-testid="rerender-btn">Re-render now</button>
+      </div>
+    </section>
+    <section class="panel" id="spa-root">
+      <!-- re-rendered -->
+    </section>
+  </main>
+  <script src="/spa.js"></script>
+</body>
+</html>

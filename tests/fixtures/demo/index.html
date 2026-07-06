@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Acme Dashboard — Morph demo fixture</title>
+  <link rel="stylesheet" href="/styles.css" />
+</head>
+<body>
+  <header class="site-header" id="header">
+    <div class="brand">Acme<span>Analytics</span></div>
+    <nav class="main-nav" aria-label="Main">
+      <a href="#" class="nav-link active">Dashboard</a>
+      <a href="#" class="nav-link">Reports</a>
+      <a href="#" class="nav-link">Customers</a>
+      <a href="#" class="nav-link">Settings</a>
+    </nav>
+    <input type="search" class="site-search" placeholder="Search…" aria-label="Search" />
+  </header>
+
+  <main class="layout">
+    <section class="hero" id="hero">
+      <h1>Welcome back, Jordan</h1>
+      <p class="subtitle">Here's what's happening across your workspace today.</p>
+      <div class="hero-actions">
+        <button class="btn btn-primary" id="new-report-btn">New report</button>
+        <button class="btn btn-secondary" id="counter-btn" data-testid="counter-btn">Clicked 0 times</button>
+      </div>
+    </section>
+
+    <section class="stats" id="stats" aria-label="Key metrics">
+      <article class="stat-card" data-stat="users">
+        <h3>Active users</h3>
+        <p class="stat-value" id="stat-users">—</p>
+        <p class="stat-delta up">+12.4% vs last week</p>
+      </article>
+      <article class="stat-card" data-stat="revenue">
+        <h3>Revenue</h3>
+        <p class="stat-value" id="stat-revenue">—</p>
+        <p class="stat-delta up">+3.1% vs last week</p>
+      </article>
+      <article class="stat-card" data-stat="uptime">
+        <h3>Uptime</h3>
+        <p class="stat-value" id="stat-uptime">—</p>
+        <p class="stat-delta flat">on target</p>
+      </article>
+      <button class="btn btn-ghost" id="refresh-stats" data-testid="refresh-stats">Refresh stats</button>
+    </section>
+
+    <section class="panel" id="users-panel">
+      <div class="panel-head">
+        <h2>Recent signups</h2>
+        <button class="btn btn-secondary btn-sm" id="invite-btn">Invite user</button>
+      </div>
+      <table class="users-table" id="users-table">
+        <thead>
+          <tr><th>Name</th><th>Email</th><th>Plan</th><th>Status</th></tr>
+        </thead>
+        <tbody>
+          <tr data-user="1"><td>Ada Lovelace</td><td>ada@example.com</td><td>Pro</td><td><span class="badge ok">Active</span></td></tr>
+          <tr data-user="2"><td>Grace Hopper</td><td>grace@example.com</td><td>Team</td><td><span class="badge ok">Active</span></td></tr>
+          <tr data-user="3"><td>Alan Turing</td><td>alan@example.com</td><td>Free</td><td><span class="badge warn">Trial</span></td></tr>
+          <tr data-user="4"><td>Katherine Johnson</td><td>katherine@example.com</td><td>Pro</td><td><span class="badge err">Past due</span></td></tr>
+        </tbody>
+      </table>
+    </section>
+
+    <section class="panel" id="feedback-panel">
+      <h2>Send feedback</h2>
+      <form id="feedback-form" novalidate>
+        <label>Your email
+          <input type="email" name="email" placeholder="you@example.com" required />
+        </label>
+        <label>Message
+          <textarea name="message" rows="3" placeholder="What could be better?" required></textarea>
+        </label>
+        <button class="btn btn-primary" type="submit">Send</button>
+        <p class="form-status" id="form-status" role="status"></p>
+      </form>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <p>© 2026 Acme Analytics · <a href="#">Privacy</a> · <a href="#">Terms</a></p>
+  </footer>
+
+  <script src="/app.js"></script>
+</body>
+</html>

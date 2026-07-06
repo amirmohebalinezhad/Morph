@@ -1,0 +1,34 @@
+{
+  "manifest_version": 3,
+  "name": "Morph — AI Live UI Prototyping",
+  "version": "0.1.0",
+  "description": "Select elements on any page, describe changes in plain language, prototype live with AI, then export an implementation prompt for your coding agent.",
+  "minimum_chrome_version": "121",
+  "action": {
+    "default_title": "Toggle Morph edit mode"
+  },
+  "background": {
+    "service_worker": "background.js",
+    "type": "module"
+  },
+  "options_page": "options.html",
+  "permissions": ["activeTab", "scripting", "storage"],
+  "optional_permissions": ["userScripts"],
+  "host_permissions": [
+    "https://api.anthropic.com/*",
+    "https://api.openai.com/*"
+  ],
+  "optional_host_permissions": [
+    "https://*/*",
+    "http://localhost/*",
+    "http://127.0.0.1/*"
+  ],
+  "commands": {
+    "_execute_action": {
+      "suggested_key": {
+        "default": "Alt+Shift+M"
+      },
+      "description": "Toggle Morph edit mode"
+    }
+  }
+}
