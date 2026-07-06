@@ -38,6 +38,10 @@ const configs = [
     entryPoints: ['src/background/index.ts'],
     outfile: 'dist/background.js',
     format: 'esm',
+    // The Anthropic SDK dynamically imports node builtins for CLI-profile
+    // auth, a path never taken in the extension (we always pass an explicit
+    // API key). Leave them unresolved rather than failing the bundle.
+    external: ['node:fs', 'node:path', 'node:os'],
   },
   {
     ...common,

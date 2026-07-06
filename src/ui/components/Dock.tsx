@@ -1,13 +1,12 @@
 import { useState } from 'react';
-import { useStore } from 'zustand';
 import type { Session } from '../../content/session';
+import { ChatPanel } from './ChatPanel';
 
 type DockTab = 'chat' | 'timeline' | 'inspect';
 
 export function Dock({ session }: { session: Session }) {
   const [tab, setTab] = useState<DockTab>('chat');
   const [collapsed, setCollapsed] = useState(false);
-  const selectionCount = useStore(session.store, (s) => s.selection.length);
 
   if (collapsed) {
     return (
@@ -50,16 +49,7 @@ export function Dock({ session }: { session: Session }) {
       </div>
 
       <div className="dock-body">
-        {tab === 'chat' && (
-          <div className="dock-placeholder" data-morph-pane="chat">
-            <p className="ph-title">Describe a change</p>
-            <p className="ph-hint">
-              {selectionCount > 0
-                ? 'AI editing arrives in the next milestone.'
-                : 'Click an element on the page to select it (shift-click adds more), then describe what you want.'}
-            </p>
-          </div>
-        )}
+        {tab === 'chat' && <ChatPanel session={session} />}
         {tab === 'timeline' && (
           <div className="dock-placeholder" data-morph-pane="timeline">
             <p className="ph-title">History</p>

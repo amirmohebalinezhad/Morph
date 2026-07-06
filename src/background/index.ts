@@ -3,7 +3,9 @@
 // capture, and (from M2) AI provider calls. All prototype/session state lives
 // in the content script.
 import type { RuntimeRequest, RuntimeResponseMap } from '../shared/messages';
-import { sendToTab } from '../shared/messages';
+import { AI_PORT_NAME, sendToTab } from '../shared/messages';
+import { captureAndScaleViewport } from './screenshot';
+import { handleAiPort } from './session-router';
 
 async function isContentScriptAlive(tabId: number): Promise<boolean> {
   try {
@@ -62,15 +64,12 @@ function handleRuntimeMessage(
     case 'CAPTURE_VIEWPORT': {
       void (async () => {
         try {
-          const windowId = sender.tab?.windowId;
-          const dataUrl = await chrome.tabs.captureVisibleTab(windowId ?? chrome.windows.WINDOW_ID_CURRENT, {
-            format: 'jpeg',
-            quality: Math.round(msg.quality * 100),
-          });
-          sendResponse({ dataUrl } satisfies RuntimeResponseMap['CAPTURE_VIEWPORT']);
+          const windowId = sender.tab?.windowId ?? chrome.windows.WINDOW_ID_CURRENT;
+          const base64 = await captureAndScaleViewport(windowId, msg.maxWidth, msg.quality);
+          sendResponse({ base64 } satisfies RuntimeResponseMap['CAPTURE_VIEWPORT']);
         } catch (err) {
           sendResponse({
-            dataUrl: null,
+            base64: null,
             error: err instanceof Error ? err.message : String(err),
           } satisfies RuntimeResponseMap['CAPTURE_VIEWPORT']);
         }
@@ -96,6 +95,10 @@ function handleRuntimeMessage(
 chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
   if (!msg || typeof msg !== 'object' || !('type' in msg)) return undefined;
   return handleRuntimeMessage(msg as RuntimeRequest, sender, sendResponse);
+});
+
+chrome.runtime.onConnect.addListener((port) => {
+  if (port.name === AI_PORT_NAME) handleAiPort(port);
 });
 
 // ---------------------------------------------------------------------------
